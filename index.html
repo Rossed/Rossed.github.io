@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Inference Demo</title>
+   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+</head>
+<body>
+  <h1>Model Integration Demo</h1>
+  <p>Click an image to run model inference in browser.</p>
+  <p>Model used is a ResNet50 model exported to ONNX Format.</p>
+  <img id="input-img-stingray" src="img/stingray.jpg" width="224" height="224" style="cursor:pointer;">
+  <img id="input-img-desk" src="img/desk.jpg" width="224" height="224" style="cursor:pointer;">
+  <img id="input-img-pelican" src="img/pelican.jpg" width="224" height="224" style="cursor:pointer;">
+  <img id="input-img-toy poodle" src="img/toy poodle.jpg" width="224" height="224" style="cursor:pointer;">
+
+
+  <p id="result">Prediction: </p>
+   <script>
+       let labels = [];
+
+        // Load labels.json
+        async function loadLabels() {
+          const response = await fetch("./class_labels.json");
+          labels = await response.json();
+        }
+
+        async function runModel(input_image) {
+            // Ensure labels are loaded
+            if (labels.length === 0) {
+            await loadLabels();
+            }
+
+            // Load the ONNX model
+            const session = await ort.InferenceSession.create("./onnx_exports/webpage_model.onnx");
+
+            // If class label is an ImageNet classes
+            if (labels["class_labels"].includes(input_image)) {
+                // Get the image element
+                const img = document.getElementById("input-img-" + input_image);
+
+                // Initial image processing
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = 224;
+                canvas.height = 224;
+                ctx.drawImage(img, 0, 0, 224, 224);
+                const imageData = ctx.getImageData(0, 0, 224, 224);
+                const { data } = imageData;
+
+                // Convert iamge to flattened tensor (as required for model input)
+                const inputTensor = new ort.Tensor("uint8", data, [224 * 224 * 4]);
+
+                // Run model inference
+                const feeds = { "prep_input": inputTensor };
+                const results = await session.run(feeds);
+
+                // Get output tensor
+                const outputTensor = results["output"].cpuData;
+
+                // Find the top prediction
+                let maxVal = -Infinity, maxIdx = -1;
+                outputTensor.forEach((val, idx) => {
+                    if (val > maxVal) {
+                      maxVal = val;
+                      maxIdx = idx;
+                    }
+                });
+
+                // Get class label and display
+                const label = labels["class_labels"][maxIdx] || `class ${maxIdx}`;
+                document.getElementById("result").innerText = `Prediction: ${label}`;
+
+            } else {
+                // Else, Class is not an ImageNet class - display Error
+                document.getElementById("result").innerText = `Error`;
+            }
+        }
+
+        // Add runModel function to each image if clicked
+        document.getElementById("input-img-stingray").addEventListener('click', function() { runModel("stingray") });
+        document.getElementById("input-img-desk").addEventListener('click', function() { runModel("desk") });
+        document.getElementById("input-img-pelican").addEventListener('click', function() { runModel("pelican") });
+        document.getElementById("input-img-toy poodle").addEventListener('click', function() { runModel("toy poodle") });
+  </script>
+
+</body>
+</html>
