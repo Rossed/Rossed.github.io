@@ -3,7 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>Image Inference Demo</title>
-   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script>
+        // Function to labels.json
+        async function loadLabels() {
+          const response = await fetch("./class_labels.json");
+          window.labels = await response.json();
+        }
+
+        // Load class labels & model
+        window.onload = async function() {
+            await loadLabels();
+            window.session = await ort.InferenceSession.create("./onnx_exports/webpage_model.onnx");
+        }
+    </script>
 </head>
 <body>
   <h1>Model Integration Demo</h1>
@@ -17,26 +30,14 @@
 
   <p id="result">Prediction: </p>
    <script>
-       let labels = [];
 
-        // Load labels.json
-        async function loadLabels() {
-          const response = await fetch("./class_labels.json");
-          labels = await response.json();
-        }
 
         async function runModel(input_image) {
-            // Ensure labels are loaded
-            if (labels.length === 0) {
-            await loadLabels();
-            }
-
-            // Load the ONNX model
-            const session = await ort.InferenceSession.create("./onnx_exports/webpage_model.onnx");
 
             // If class label is an ImageNet classes
-            if (labels["class_labels"].includes(input_image)) {
+            if (window.labels["class_labels"].includes(input_image)) {
                 // Get the image element
+                document.getElementById("result").innerText = `Prediction: Transforming image...`;
                 const img = document.getElementById("input-img-" + input_image);
 
                 // Initial image processing
@@ -52,8 +53,9 @@
                 const inputTensor = new ort.Tensor("uint8", data, [224 * 224 * 4]);
 
                 // Run model inference
+                document.getElementById("result").innerText = `Prediction: Performing model inference...`;
                 const feeds = { "prep_input": inputTensor };
-                const results = await session.run(feeds);
+                const results = await window.session.run(feeds);
 
                 // Get output tensor
                 const outputTensor = results["output"].cpuData;
@@ -68,7 +70,7 @@
                 });
 
                 // Get class label and display
-                const label = labels["class_labels"][maxIdx] || `class ${maxIdx}`;
+                const label = window.labels["class_labels"][maxIdx] || `class ${maxIdx}`;
                 document.getElementById("result").innerText = `Prediction: ${label}`;
 
             } else {
