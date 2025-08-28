@@ -14,8 +14,16 @@
 
         // Load class labels & model
         window.onload = async function() {
+            document.getElementById("result").innerText = `Loading ResNet50 model...`;
             await loadLabels();
             window.session = await ort.InferenceSession.create("./onnx_exports/webpage_model.onnx");
+            document.getElementById("result").innerText = `Prediction: `;
+
+            // Add runModel function to each image on click
+            document.getElementById("input-img-stingray").style.display = "";
+            document.getElementById("input-img-desk").style.display = "";
+            document.getElementById("input-img-pelican").style.display = "";
+            document.getElementById("input-img-toy poodle").style.display = "";
         }
     </script>
 </head>
@@ -24,13 +32,14 @@
   <p>Click an image to run model inference in browser.</p>
   <p>Model used is a ResNet50 model exported to ONNX Format.</p>
     
-  <img id="input-img-stingray" src="img/stingray.jpg" width="224" height="224" style="cursor:pointer;">
-  <img id="input-img-desk" src="img/desk.jpg" width="224" height="224" style="cursor:pointer;">
-  <img id="input-img-pelican" src="img/pelican.jpg" width="224" height="224" style="cursor:pointer;">
-  <img id="input-img-toy poodle" src="img/toy poodle.jpg" width="224" height="224" style="cursor:pointer;">
+  <img id="input-img-stingray" src="img/stingray.jpg" width="224" height="224" style="cursor:pointer; display: none">
+  <img id="input-img-desk" src="img/desk.jpg" width="224" height="224" style="cursor:pointer; display: none">
+  <img id="input-img-pelican" src="img/pelican.jpg" width="224" height="224" style="cursor:pointer; display: none">
+  <img id="input-img-toy poodle" src="img/toy poodle.jpg" width="224" height="224" style="cursor:pointer; display: none">
 
   <p id="result">Prediction: </p>
    <script>
+
         async function runModel(input_image) {
             // If class label is an ImageNet classes
             if (window.labels["class_labels"].includes(input_image)) {
