@@ -14,23 +14,24 @@
 
         // Load class labels & model
         window.onload = async function() {
-            document.getElementById("result").innerText = `Loading ResNet50 model...`;
+            document.getElementById("result").innerText = "Loading ResNet50 model (can take a few seconds)...";
             await loadLabels();
             window.session = await ort.InferenceSession.create("./onnx_exports/webpage_model.onnx");
-            document.getElementById("result").innerText = `Prediction: `;
+            document.getElementById("result").innerText = "Prediction: ";
 
-            // Add runModel function to each image on click
+            // Display required elements after model loads
             document.getElementById("input-img-stingray").style.display = "";
             document.getElementById("input-img-desk").style.display = "";
             document.getElementById("input-img-pelican").style.display = "";
             document.getElementById("input-img-toy poodle").style.display = "";
+            document.getElementById("p1").innerText = "Click an image to run model inference in browser:";
         }
     </script>
 </head>
 <body>
   <h1>Model Integration Demo</h1>
-  <p>Click an image to run model inference in browser.</p>
   <p>Model used is a ResNet50 model exported to ONNX Format.</p>
+  <p id="p1"></p>
     
   <img id="input-img-stingray" src="img/stingray.jpg" width="224" height="224" style="cursor:pointer; display: none">
   <img id="input-img-desk" src="img/desk.jpg" width="224" height="224" style="cursor:pointer; display: none">
@@ -44,7 +45,7 @@
             // If class label is an ImageNet classes
             if (window.labels["class_labels"].includes(input_image)) {
                 // Get the image element
-                document.getElementById("result").innerText = `Prediction: Transforming image...`;
+                document.getElementById("result").innerText = "Prediction: Transforming image...";
                 const img = document.getElementById("input-img-" + input_image);
 
                 // Initial image processing
@@ -60,7 +61,7 @@
                 const inputTensor = new ort.Tensor("uint8", data, [224 * 224 * 4]);
 
                 // Run model inference
-                document.getElementById("result").innerText = `Prediction: Performing model inference...`;
+                document.getElementById("result").innerText = "Prediction: Performing model inference...";
                 const feeds = { "prep_input": inputTensor };
                 const results = await window.session.run(feeds);
 
@@ -77,12 +78,12 @@
                 });
 
                 // Get class label and display
-                const label = window.labels["class_labels"][maxIdx] || `class ${maxIdx}`;
-                document.getElementById("result").innerText = `Prediction: ${label}`;
+                const label = window.labels["class_labels"][maxIdx] || "class ${maxIdx}";
+                document.getElementById("result").innerText = "Prediction: ${label}";
 
             } else {
                 // Else, Class is not an ImageNet class - display Error
-                document.getElementById("result").innerText = `Error`;
+                document.getElementById("result").innerText = "Error";
             }
         }
 
