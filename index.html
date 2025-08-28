@@ -14,7 +14,7 @@
 
         // Load class labels & model
         window.onload = async function() {
-            document.getElementById("result").innerText = "Loading ResNet50 model (can take a few seconds)...";
+            document.getElementById("result").innerText = "Loading ResNet50 model (can take 10-20 seconds)...";
             await loadLabels();
             window.session = await ort.InferenceSession.create("./onnx_exports/webpage_model.onnx");
             document.getElementById("result").innerText = "Prediction: ";
