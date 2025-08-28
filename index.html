@@ -78,8 +78,8 @@
                 });
 
                 // Get class label and display
-                const label = window.labels["class_labels"][maxIdx] || "class ${maxIdx}";
-                document.getElementById("result").innerText = "Prediction: ${label}";
+                const label = window.labels["class_labels"][maxIdx] || `class ${maxIdx}`;
+                document.getElementById("result").innerText = `Prediction: ${label}`;
 
             } else {
                 // Else, Class is not an ImageNet class - display Error
